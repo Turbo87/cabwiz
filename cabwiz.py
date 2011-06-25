@@ -2,6 +2,7 @@
 # http://msdn.microsoft.com/en-us/library/bb964579.aspx
 
 import sys
+import InfReader
 
 def read_parameters(argv):    
     if len(argv) < 2:
@@ -61,6 +62,9 @@ def main():
         return
     
     print 'Reading INF file "' + parameters['inf-file'] + '" ...'
+    inf = InfReader.InfReader()
+    inf.read(parameters['inf-file'])
+    print inf.raw()
     
 if __name__ == '__main__':
     main()
