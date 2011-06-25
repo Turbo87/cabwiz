@@ -23,3 +23,6 @@ class InfReader:
         
     def raw(self):
         return self.__data
+    
+    def has_section(self, section):
+        return section in self.__data

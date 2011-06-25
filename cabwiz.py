@@ -4,11 +4,27 @@
 import sys
 import InfReader
 
+def check_section(inf, section):
+    if inf.has_section(section):
+        return True
+    
+    print 'Error: Section "' + section + '" is missing'
+    return False
+
+def check_sections(inf):
+    return (check_section(inf, 'Version') and
+            check_section(inf, 'CEStrings') and
+            check_section(inf, 'DefaultInstall') and
+            check_section(inf, 'DestinationDirs'))
+
 def process_parameters(parameters):
     print 'Reading INF file "' + parameters['inf-file'] + '" ...'
     inf = InfReader.InfReader()
     inf.read(parameters['inf-file'])
-    print inf.raw()
+    
+    if not check_sections(inf):
+        return
+
 def read_parameters(argv):    
     if len(argv) < 2:
         return {}
