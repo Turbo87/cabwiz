@@ -26,3 +26,6 @@ class InfReader:
     
     def has_section(self, section):
         return section in self.__data
+
+    def get_section(self, section):
+        return self.__data[section]
