@@ -4,56 +4,12 @@
 import sys
 import InfReader
 
-def read_replacements_section(inf, section):
-    replacements = []
-    for line in inf.get_section(section):
-        line = line.split('=')
-        if len(line) < 2:
-            continue
-        
-        key = line[0].strip()
-        value = line[1].strip()
-        replacements.append([key, value])
-
-    return replacements        
-
-def read_replacements(inf):
-    # Read replacements from CEStrings section
-    replacements = read_replacements_section(inf, 'CEStrings')
-    
-    # Read replacements from Strings section if it exists
-    if inf.has_section('Strings'):
-        replacements.extend(read_replacements_section(inf, 'Strings'))
-        
-    # Return replacements array
-    return replacements        
-
-def apply_replacements(inf):
-    # Read replacement sections from INF file
-    replacements = read_replacements(inf)
-    
-    # Apply replacements to themselves until none left
-    found = True
-    while found:
-        found = False
-        
-        for replacement in replacements:
-            for i in range(len(replacements)):
-                if replacement[0] in replacements[i][1]: 
-                    found = True
-                    replacements[i][1] = replacements[i][1].replace('%' + replacement[0] + '%', replacement[1]) 
-
-    # Apply replacements to the other sections
-    inf.apply_replacements(replacements)
-
 def process_parameters(parameters):
     print 'Reading INF file "' + parameters['inf-file'] + '" ...'
     inf = InfReader.InfReader()
     
     if not inf.read(parameters['inf-file']):
         return
-    
-    apply_replacements(inf)
     
     print inf.raw()
 

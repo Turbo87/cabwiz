@@ -22,6 +22,8 @@ class InfReader:
         if not self.__check_sections():
             return False
         
+        self.__apply_replacements()
+        
         return True
         
     def read(self, path):
@@ -50,7 +52,31 @@ class InfReader:
     def get_section(self, section):
         return self.__data[section]
 
-    def apply_replacement(self, replacement):
+    def __read_replacements_section(self, section):
+        replacements = []
+        for line in self.get_section(section):
+            line = line.split('=')
+            if len(line) < 2:
+                continue
+            
+            key = line[0].strip()
+            value = line[1].strip()
+            replacements.append([key, value])
+    
+        return replacements        
+    
+    def __read_replacements(self):
+        # Read replacements from CEStrings section
+        replacements = self.__read_replacements_section('CEStrings')
+        
+        # Read replacements from Strings section if it exists
+        if self.has_section('Strings'):
+            replacements.extend(self.__read_replacements_section('Strings'))
+            
+        # Return replacements array
+        return replacements        
+
+    def __apply_replacement(self, replacement):
         new_sections = {}
         for section, content in self.__data.iteritems():
             new_content = []
@@ -60,7 +86,22 @@ class InfReader:
             new_sections[section] = new_content
             
         self.__data = new_sections
-
-    def apply_replacements(self, replacements):
+    
+    def __apply_replacements(self):
+        # Read replacement sections from INF file
+        replacements = self.__read_replacements()
+        
+        # Apply replacements to themselves until none left
+        found = True
+        while found:
+            found = False
+            
+            for replacement in replacements:
+                for i in range(len(replacements)):
+                    if replacement[0] in replacements[i][1]: 
+                        found = True
+                        replacements[i][1] = replacements[i][1].replace('%' + replacement[0] + '%', replacement[1]) 
+    
+        # Apply replacements to the other sections
         for replacement in replacements:
-            self.apply_replacement(replacement)
+            self.__apply_replacement(replacement)
