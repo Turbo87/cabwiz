@@ -5,8 +5,12 @@ class InfReader:
     def read_file(self, file):
         section = ''
         for line in file:
+            pos = line.find(';')
+            if pos != -1:
+                line = line[:pos]
+                
             line = line.strip()
-            if line.startswith(';'):
+            if line == "":
                 continue
             
             if line.startswith('[') and line.endswith(']'):
@@ -14,13 +18,29 @@ class InfReader:
                 self.__data[section] = []
             elif section != '':
                 self.__data[section].append(line)
+                
+        if not self.__check_sections():
+            return False
+        
+        return True
         
     def read(self, path):
         with open(path, 'r') as file:
-            self.read_file(file)
-            
-        file.close()
+            return self.read_file(file)
         
+    def __check_section(self, section):
+        if self.has_section(section):
+            return True
+        
+        print 'Error: Section "' + section + '" is missing'
+        return False
+    
+    def __check_sections(self):
+        return (self.__check_section('Version') and
+                self.__check_section('CEStrings') and
+                self.__check_section('DefaultInstall') and
+                self.__check_section('DestinationDirs'))
+
     def raw(self):
         return self.__data
     
