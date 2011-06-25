@@ -29,3 +29,18 @@ class InfReader:
 
     def get_section(self, section):
         return self.__data[section]
+
+    def apply_replacement(self, replacement):
+        new_sections = {}
+        for section, content in self.__data.iteritems():
+            new_content = []
+            for line in content:
+                new_content.append(line.replace('%' + replacement[0] + '%', replacement[1]))
+                
+            new_sections[section] = new_content
+            
+        self.__data = new_sections
+
+    def apply_replacements(self, replacements):
+        for replacement in replacements:
+            self.apply_replacement(replacement)
