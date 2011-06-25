@@ -2,16 +2,7 @@
 # http://msdn.microsoft.com/en-us/library/bb964579.aspx
 
 import sys
-import InfReader
-
-def process_parameters(parameters):
-    print 'Reading INF file "' + parameters['inf-file'] + '" ...'
-    inf = InfReader.InfReader()
-    
-    if not inf.read(parameters['inf-file']):
-        return
-    
-    print inf.raw()
+import InfCabGlue
 
 def read_parameters(argv):    
     if len(argv) < 2:
@@ -70,7 +61,8 @@ def main():
         print 'Error: invalid command line parameters'
         return
     
-    process_parameters(parameters)
+    glue = InfCabGlue.InfCabGlue(parameters)
+    glue.glue()
     
 if __name__ == '__main__':
     main()
