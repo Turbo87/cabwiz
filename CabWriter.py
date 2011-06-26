@@ -2,7 +2,7 @@ import subprocess
 import struct
 
 def munge_filename(munged, extension):
-    munged = munged.split("/")[-1]
+    munged = munged.split("/")[-1].split(".")[0]
     munged = munged.replace(" ", "")[:8].zfill(8)
     munged = '%s.%03d' % (munged, extension)
     return munged
