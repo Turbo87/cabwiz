@@ -164,7 +164,7 @@ class CabWriter:
         lcab_args.append(dir + path)
         
         if verbose: print "Starting lcab ..."
-        with open("NUL", "w") as null:
+        with open("/dev/null", "w") as null:
             p = subprocess.Popen(lcab_args, stdout = None if verbose else null)
             p.wait()
         
