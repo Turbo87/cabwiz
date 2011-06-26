@@ -93,7 +93,7 @@ class InfCabGlue:
         if 'dest-dir' in self.__parameters: 
             self.__dest = self.__parameters['dest-dir']
             if not self.__dest.endswith('/'): self.__dest += '/'
-            os.mkdir(self.__dest)
+            if not os.path.exists(self.__dest): os.mkdir(self.__dest)
         
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
