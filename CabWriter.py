@@ -161,6 +161,9 @@ class CabWriter:
             
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(dir + path)
-        subprocess.call(lcab_args)
+        
+        with open("NUL", "w") as null:
+            p = subprocess.Popen(lcab_args, stdout = null)
+            p.wait()
         
         return True
