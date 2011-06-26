@@ -161,6 +161,71 @@ class InfCabGlue:
             
         return True
     
+    def __get_reghive_id(self, cab, root, path):
+        for i in range(len(cab.RegHives)):
+            if cab.RegHives[i][0] == str(root) + '/' + path: return i + 1
+        
+        parts = path.split('/')
+        strings = []
+        for part in parts:
+            strings.append(self.__get_string_id(cab, part.strip()))
+
+        cab.RegHives.append([str(root) + '/' + path, root, strings])
+        return len(cab.RegHives)
+    
+    def __unreplace_install_dir(self, str):
+        install_dir = self.__inf['CEStrings']['InstallDir'].replace('"', '')
+        return str.replace(install_dir, '%InstallDir%')
+    
+    def __parse_registry(self, cab):
+        if 'AddReg' not in self.__inf['DefaultInstall']: return {}
+        
+        reg = []
+        for section in self.__inf['DefaultInstall']['AddReg'].split(','):
+            section = section.strip()
+            if (section not in self.__inf): 
+                continue
+            
+            for line in self.__inf[section]:
+                line = line.split(',')
+                if len(line) < 5: continue
+                
+                reg.append([line[0], line[1].replace('\\', '/').replace('"', '').strip(),
+                            line[2].replace('"', '').strip(), int(line[3], 16), line[4:]])
+            
+        return reg
+    
+    def __convert_registry(self, cab, reg):
+        for item in reg:
+
+            if item[0] == 'HKCR': root = 1
+            elif item[0] == 'HKCU': root = 2
+            elif item[0] == 'HKLM': root = 3
+            elif item[0] == 'HKU': root = 4
+            else: continue
+            
+            hive = self.__get_reghive_id(cab, root, item[1].strip('/'))
+            
+            key = item[2]
+            
+            type = (item[3] & 0x00010001)
+            if type == 0x00010001: type = 1
+            elif type == 0x00000000: type = 2
+            elif type == 0x00010000: type = 3
+            elif type == 0x00000001: type = 4
+            else: continue
+            
+            if type == 1: value = int(item[4][0])
+            elif type == 2: value = self.__unreplace_install_dir(item[4][0].replace('"', '').strip())
+            elif type == 4: value = item[4][0]
+            elif type == 3: 
+                value = []
+                for v in item[4]:
+                    value.append(self.__unreplace_install_dir(v.replace('"', '').strip()))
+            else: continue
+            
+            cab.RegKeys.append([hive, key, type, item[3], value])
+    
     def __parse_links(self, cab, destinations):
         if 'CEShortcuts' not in self.__inf['DefaultInstall']: return {}
         
@@ -239,6 +304,8 @@ class InfCabGlue:
         copy_files = self.__parse_copy_files(cab, files, destinations)
         self.__convert_copy_files(cab, copy_files)
         self.__parse_setup_dll(cab, files)
+        reg = self.__parse_registry(cab)
+        self.__convert_registry(cab, reg)
         links = self.__parse_links(cab, destinations)
         self.__convert_links(cab, links)
 

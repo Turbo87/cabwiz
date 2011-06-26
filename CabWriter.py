@@ -81,11 +81,35 @@ class CabWriter:
         # RegHives.
         reghives_offset = offset
         reghives = ''
+        for i in range(len(self.RegHives)):
+            hive = self.RegHives[i]
+            reghives += struct.pack('<HHHH', i + 1, hive[1], 0, (len(hive[2]) * 2) + 2)
+            for id in hive[2]:
+                reghives += struct.pack('<H', id)
+
+            reghives += struct.pack('<H', 0)
+
         offset += len(reghives)
     
         # RegKeys.
         regkeys_offset = offset
         regkeys = ''
+        for i in range(len(self.RegKeys)):
+            key = self.RegKeys[i]
+
+            content = key[1] + '\0'
+            if key[2] == 1: content += struct.pack('<I', key[4])
+            elif key[2] == 2: content += key[4] + '\0'
+            elif key[2] == 4: content += key[4]
+            elif key[2] == 3:
+                for item in key[4]: 
+                    content += item + '\0'
+                content += '\0'
+            else: continue
+
+            regkeys += struct.pack('<HHHIH', i + 1, key[0], 1, key[3], len(content))
+            regkeys += content
+
         offset += len(regkeys)
     
         # Links.
