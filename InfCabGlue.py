@@ -294,7 +294,10 @@ class InfCabGlue:
             cab.Links.append([link[0], base_dir, destination, type, strings])
     
     def glue(self):
-        print 'Reading INF file "' + self.__parameters['inf-file'] + '" ...'
+        verbose = ('verbose' in self.__parameters)
+
+        if verbose: print 'Reading INF file "' + self.__parameters['inf-file'] + '" ...'
+            
         inf = InfReader.InfReader()
         
         if not inf.read(self.__parameters['inf-file']):
@@ -306,6 +309,7 @@ class InfCabGlue:
             if not self.__dest.endswith('/'): self.__dest += '/'
             if not os.path.exists(self.__dest): os.mkdir(self.__dest)
         
+        if verbose: print 'Processing INF file ...'
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
         if not self.__parse_device(cab): return False
@@ -324,12 +328,18 @@ class InfCabGlue:
         if cab_file == "":
             return False
         
-        print 'Writing CAB file to "' + self.__dest + cab_file + '" ...'
-        if not cab.write(cab_file, self.__dest):
+        if verbose: print 'Writing CAB file to "' + self.__dest + cab_file + '" ...'
+            
+        if not cab.write(cab_file, self.__dest, verbose = verbose):
             return False
+
+        if verbose: print 'Removing temporary files ...'
+        
         os.unlink(self.__dest + 'manifest.000')        
         for file in cab.Files:
             os.unlink(file[1] + file[0])
         if cab.SetupFile != "": os.unlink(cab.SetupFile)
+        
+        if verbose: print 'Done.'
         
         return True

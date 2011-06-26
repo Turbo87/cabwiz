@@ -145,10 +145,11 @@ class CabWriter:
         return (header + application + provider + unsupported + 
                 strings + directories + files + reghives + regkeys + links)
         
-    def write(self, path, dir = ''):
+    def write(self, path, dir = '', verbose = False):
         if dir != '' and not dir.endswith('/'):
             dir += '/'
         
+        if verbose: print "Creating manifest ..."
         manifest = 'manifest.000';
         with open(dir + manifest, "wb") as m:
             m.write(self.__get_manifest())
@@ -162,8 +163,9 @@ class CabWriter:
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(dir + path)
         
+        if verbose: print "Starting lcab ..."
         with open("NUL", "w") as null:
-            p = subprocess.Popen(lcab_args, stdout = null)
+            p = subprocess.Popen(lcab_args, stdout = None if verbose else null)
             p.wait()
         
         return True
