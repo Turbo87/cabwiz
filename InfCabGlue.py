@@ -15,7 +15,7 @@ class InfCabGlue:
         if 'cpu-type' in self.__parameters:
             filename += '.' + self.__parameters['cpu-type']
         
-        return filename + ".cab"
+        return filename + ".CAB"
     
     def __parse_general(self, cab):
         if ('AppName' not in self.__inf['CEStrings'] or
