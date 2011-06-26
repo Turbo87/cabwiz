@@ -1,10 +1,12 @@
 import InfReader
 import CabWriter
+import os
 
 class InfCabGlue:
     def __init__(self, parameters):
         self.__parameters = parameters
         self.__inf = {}
+        self.__dest = ''
         
     def __create_output_filename(self):
         filename = self.__inf['CEStrings']['AppName'].strip('"')
@@ -66,6 +68,10 @@ class InfCabGlue:
             return False
         
         self.__inf = inf.raw()
+        if 'dest-dir' in self.__parameters: 
+            self.__dest = self.__parameters['dest-dir']
+            if not self.__dest.endswith('/'): self.__dest += '/'
+            os.mkdir(self.__dest)
         
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
@@ -75,8 +81,8 @@ class InfCabGlue:
         if cab_file == "":
             return False
         
-        print 'Writing CAB file to "' + cab_file + '" ...'
-        if not cab.write(cab_file):
+        print 'Writing CAB file to "' + self.__dest + cab_file + '" ...'
+        if not cab.write(cab_file, self.__dest):
             return False
         
         return True
