@@ -1,6 +1,12 @@
 import subprocess
 import struct
 
+def munge_filename(munged, extension):
+    munged = munged.split("/")[-1]
+    munged = munged.replace(" ", "")[:8].zfill(8)
+    munged = '%s.%03d' % (munged, extension)
+    return munged
+    
 class CabWriter:
     def __init__(self):
         self.AppName = ''
