@@ -18,19 +18,16 @@ def read_parameters(argv):
             continue
         
         if (argv[i] == '/dest' or argv[i] == '-dest') and i + 1 < len(argv):
-            parameters['dest-dir'] =  argv[i + 1]
+            parameters['dest-dir'] = argv[i + 1]
             continue
         
         if (argv[i] == '/err' or argv[i] == '-err') and i + 1 < len(argv):
-            parameters['err-file'] =  argv[i + 1]
+            parameters['err-file'] = argv[i + 1]
             continue
         
         if (argv[i] == '/cpu' or argv[i] == '-cpu') and i + 1 < len(argv):
             j = i + 1
-            parameters['cpu-type'] = []
-            while j < len(argv) and not (argv[j].startswith('/') or argv[j].startswith('-')):
-                parameters['cpu-type'].append(argv[j])
-                j += 1
+            parameters['cpu-type'] = argv[i + 1]
             continue
         
         if (argv[i] == '/platform' or argv[i] == '-platform') and i + 1 < len(argv):
@@ -40,7 +37,7 @@ def read_parameters(argv):
     return parameters
 
 def print_help():
-    print '''Usage:    python cabwiz.py <inf-file> [/dest <dest-dir>] [/err <err-file>] [/cpu <cpu-type> [<cpu-type]] [/platform <platform-name]
+    print '''Usage:    python cabwiz.py <inf-file> [/dest <dest-dir>] [/err <err-file>] [/cpu <cpu-type>] [/platform <platform-name]
     
          inf-file       INF source file to use
          dest-dir       absolute dest dir for CAB files
