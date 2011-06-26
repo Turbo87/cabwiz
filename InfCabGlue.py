@@ -117,13 +117,15 @@ class InfCabGlue:
         return copy_files
     
     def __get_string_id(self, cab, string):
-        if string in cab.Strings: return cab.Strings[string]
+        for i in range(len(cab.Strings)):
+            if cab.Strings[i] == string: return i + 1
         
         cab.Strings.append(string)
         return len(cab.Strings)
     
     def __get_dir_id(self, cab, dir):
-        if dir in cab.Dirs: return cab.Dirs[dir]
+        for i in range(len(cab.Dirs)):
+            if cab.Dirs[i][0] == dir: return i + 1
         
         parts = dir.split('/')
         strings = []
