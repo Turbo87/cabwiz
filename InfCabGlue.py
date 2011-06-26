@@ -18,12 +18,17 @@ class InfCabGlue:
         return filename + ".cab"
     
     def __parse_general(self, cab):
-        if ('AppName' not in self.__inf['CEStrings'] or 
+        if ('AppName' not in self.__inf['CEStrings'] or
+            'InstallDir' not in self.__inf['CEStrings'] or  
             'Provider' not in self.__inf['Version']):
             return False
         
         cab.AppName = self.__inf['CEStrings']['AppName'].strip('"')
         cab.Provider = self.__inf['Version']['Provider'].strip('"')
+        
+        install_dir = self.__inf['CEStrings']['InstallDir'].replace('"', '').strip()
+        self.__get_string_id(cab, install_dir)
+        
         return True
     
     def __parse_device_version(self, version):
