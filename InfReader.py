@@ -23,6 +23,7 @@ class InfReader:
             return False
         
         self.__apply_replacements()
+        self.__array_to_dict()
         
         return True
         
@@ -105,3 +106,29 @@ class InfReader:
         # Apply replacements to the other sections
         for replacement in replacements:
             self.__apply_replacement(replacement)
+            
+    def __array_section_to_dict(self, section, content):
+        dict = {}
+        for line in content:
+            line = line.split('=')
+            if len(line) < 2:
+                continue
+            
+            key = line[0].strip()
+            value = line[1].strip()
+            dict[key] = value
+        
+        self.__data[section] = dict
+            
+    def __array_to_dict(self):
+        for section, content in self.__data.iteritems():
+            if (section.startswith('Version') or
+                section.startswith('CEStrings') or
+                section.startswith('Strings') or
+                section.startswith('CEDevice') or
+                section.startswith('SourceDisksNames') or
+                section.startswith('SourceDisksFiles') or
+                section.startswith('DefaultInstall') or
+                section.startswith('DestinationDirs')):
+                self.__array_section_to_dict(section, content)
+                
