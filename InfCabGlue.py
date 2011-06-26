@@ -1,5 +1,6 @@
 import InfReader
 import CabWriter
+import shutil
 import os
 
 class InfCabGlue:
@@ -60,6 +61,18 @@ class InfCabGlue:
             
         return True
     
+    def __parse_setup_dll(self, cab):
+        if ('CESetupDLL' not in self.__inf['DefaultInstall']):
+            return False
+        
+        dll_in = self.__inf['DefaultInstall']['CESetupDLL']
+        dll_out = self.__dest + CabWriter.munge_filename(dll_in, 999)
+        shutil.copy(dll_in, dll_out)
+        
+        cab.SetupFile = dll_out
+            
+        return True
+    
     def glue(self):
         print 'Reading INF file "' + self.__parameters['inf-file'] + '" ...'
         inf = InfReader.InfReader()
@@ -76,6 +89,7 @@ class InfCabGlue:
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
         if not self.__parse_device(cab): return False
+        self.__parse_setup_dll(cab)
 
         cab_file = self.__create_output_filename()
         if cab_file == "":

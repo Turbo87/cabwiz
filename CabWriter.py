@@ -74,7 +74,7 @@ class CabWriter:
             filename = path
             filename = file[0].split("/")[-1]
 
-            files += struct.pack('<HHHIH', i, file[1], file[2], 0, 1 + len(filename))
+            files += struct.pack('<HHHIH', i, file[1], i, 0, 1 + len(filename))
             files += file + '\0'
         
         offset += len(files)
@@ -124,8 +124,10 @@ class CabWriter:
         with open(dir + manifest, "wb") as m:
             m.write(self.__get_manifest())
         
-        lcab_args = ['lcab']
+        lcab_args = ['lcab', '-n']
+        lcab_args.append(manifest)
         lcab_args.extend(cab_files)
+        if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(path)
         subprocess.call(lcab_args)
         
