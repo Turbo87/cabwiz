@@ -91,6 +91,14 @@ class CabWriter:
         # Links.
         links_offset = offset
         links = ''
+        for i in range(len(self.Links)):
+            link = self.Links[i]
+            links += struct.pack('<HHHHHH', i + 1, 0, link[1], link[2], link[3], (len(link[4]) * 2) + 2)
+            for id in link[4]:
+                links += struct.pack('<H', id)
+
+            links += struct.pack('<H', 0)
+        
         offset += len(links)
     
         # Header.
@@ -128,7 +136,7 @@ class CabWriter:
             lcab_args.append(file[1] + file[0])
             
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
-        lcab_args.append(path)
+        lcab_args.append(dir + path)
         subprocess.call(lcab_args)
         
         return True

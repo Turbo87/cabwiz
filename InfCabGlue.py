@@ -141,7 +141,7 @@ class InfCabGlue:
             shutil.copy(file[1] + file[0], self.__dest + out)
             
             dir = self.__get_dir_id(cab, file[3])
-            cab.Files.append([out, self.__dest, file[2], file[3], file[4], dir])
+            cab.Files.append([out, self.__dest, file[2], file[3], file[4], dir, file[0]])
             
         return True
     
@@ -158,6 +158,62 @@ class InfCabGlue:
         cab.SetupFile = dll_out
             
         return True
+    
+    def __parse_links(self, cab, destinations):
+        if 'CEShortcuts' not in self.__inf['DefaultInstall']: return {}
+        
+        links = []
+        for section in self.__inf['DefaultInstall']['CEShortcuts'].split(','):
+            section = section.strip()
+            if (section not in self.__inf): 
+                continue
+            
+            section_dest = destinations[section] if section in destinations else '' 
+            
+            for line in self.__inf[section]:
+                line = line.split(',')
+                if len(line) < 3: continue
+                
+                link = [line[0].replace('"', '').strip() + '.lnk']
+                link.append(line[2].replace('"', '').strip())
+                link.append(int(line[1]) != 0)
+                
+                dir = section_dest
+                if len(line) > 3:
+                    dir = line[3].replace('\\', '/').replace('"', '').strip()
+                
+                if dir == '': continue
+                
+                link.append(dir.rstrip('/') + '/')
+                links.append(link)
+            
+        return links
+    
+    def __convert_links(self, cab, links):
+        for link in links:
+            parts = (link[3] + link[0]).split('/')
+
+            strings = []
+            base_dir = ''
+            for part in parts:
+                if base_dir == '': base_dir = part
+                else: strings.append(self.__get_string_id(cab, part.strip()))
+            
+            if base_dir.startswith('%CE') and base_dir.endswith('%'):
+                base_dir = int(base_dir.strip('%')[2:])
+            else:
+                base_dir = 0
+            
+            type = 0 if link[2] else 1
+            if type == 0:
+                destination = self.__get_dir_id(cab, link[1])
+            else:
+                for i in range(len(cab.Files)):
+                    if cab.Files[i][6] == link[1]:
+                        destination = i + 1
+                        break
+                
+            cab.Links.append([link[0], base_dir, destination, type, strings])
     
     def glue(self):
         print 'Reading INF file "' + self.__parameters['inf-file'] + '" ...'
@@ -181,6 +237,8 @@ class InfCabGlue:
         copy_files = self.__parse_copy_files(cab, files, destinations)
         self.__convert_copy_files(cab, copy_files)
         self.__parse_setup_dll(cab, files)
+        links = self.__parse_links(cab, destinations)
+        self.__convert_links(cab, links)
 
         cab_file = self.__create_output_filename()
         if cab_file == "":
