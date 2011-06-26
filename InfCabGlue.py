@@ -61,6 +61,15 @@ class InfCabGlue:
             
         return True
     
+    def __parse_disk_names(self, cab):
+        names = {}
+        for id, value in self.__inf['SourceDisksNames'].iteritems():
+            id = int(id)
+            value = value.split(',')[-1]
+            names[id] = value
+            
+        return names
+    
     def __parse_setup_dll(self, cab):
         if ('CESetupDLL' not in self.__inf['DefaultInstall']):
             return False
@@ -89,6 +98,7 @@ class InfCabGlue:
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
         if not self.__parse_device(cab): return False
+        names = self.__parse_disk_names(cab)
         self.__parse_setup_dll(cab)
 
         cab_file = self.__create_output_filename()
