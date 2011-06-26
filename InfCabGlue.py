@@ -65,7 +65,7 @@ class InfCabGlue:
         names = {}
         for id, value in self.__inf['SourceDisksNames'].iteritems():
             id = int(id)
-            value = value.split(',')[-1].replace('\\', '/')
+            value = value.split(',')[-1].replace('\\', '/').replace('"', '')
             if not value.endswith('/'): value += '/'
             names[id] = value
             
@@ -76,9 +76,17 @@ class InfCabGlue:
         for file, id in self.__inf['SourceDisksFiles'].iteritems():
             id = int(id)
             if id in names:
-                files[file] = names[id]
+                files[file.replace('"', '')] = names[id]
             
         return files
+    
+    def __parse_destinations(self, cab):
+        destinations = {}
+        for name, value in self.__inf['DestinationDirs'].iteritems():
+            value = value.split(',')[-1].replace('\\', '/').replace('"', '')
+            destinations[name] = value
+            
+        return destinations
     
     def __parse_setup_dll(self, cab, files):
         if ('CESetupDLL' not in self.__inf['DefaultInstall']):
@@ -112,6 +120,7 @@ class InfCabGlue:
         if not self.__parse_device(cab): return False
         names = self.__parse_disk_names(cab)
         files = self.__parse_disk_files(cab, names)
+        destinations = self.__parse_destinations(cab)
         self.__parse_setup_dll(cab, files)
 
         cab_file = self.__create_output_filename()
