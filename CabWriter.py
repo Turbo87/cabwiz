@@ -125,7 +125,7 @@ class CabWriter:
             m.write(self.__get_manifest())
         
         lcab_args = ['lcab', '-n']
-        lcab_args.append(manifest)
+        lcab_args.append(dir + manifest)
         lcab_args.extend(cab_files)
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(path)
