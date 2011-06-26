@@ -132,10 +132,16 @@ class InfCabGlue:
         for i in range(len(cab.Dirs)):
             if cab.Dirs[i][0] == dir: return i + 1
         
-        parts = dir.split('/')
         strings = []
+        install_dir = self.__inf['CEStrings']['InstallDir'].replace('"', '').replace('\\', '/')
+        if dir.startswith(install_dir):
+            strings.append(1)
+            
+        parts = dir.replace(install_dir, '').split('/')
         for part in parts:
-            strings.append(self.__get_string_id(cab, part.strip()))
+            part = part.strip()
+            if part == '': continue
+            strings.append(self.__get_string_id(cab, part))
 
         cab.Dirs.append([dir, strings])
         return len(cab.Dirs)
