@@ -88,6 +88,34 @@ class InfCabGlue:
             
         return destinations
     
+    def __parse_copy_files(self, cab, files, destinations):
+        if 'CopyFiles' not in self.__inf['DefaultInstall']: return {}
+        
+        copy_files = []
+        for section in self.__inf['DefaultInstall']['CopyFiles'].split(','):
+            section = section.strip()
+            if (section not in self.__inf or 
+                section not in destinations): 
+                continue
+            
+            for line in self.__inf[section]:
+                line = line.split(',')
+                if len(line) < 1: continue
+                
+                filename = line[0].strip()
+                file = [filename]
+                if filename not in files: continue
+                file.append(files[filename])
+                
+                file.append(line[1].strip() if len(line) > 1 else filename)
+                file.append(destinations[section])
+                 
+                file.append(int(line[3].strip(), 16) if len(line) > 3 else 0)
+                
+                copy_files.append(file)
+            
+        return copy_files
+    
     def __parse_setup_dll(self, cab, files):
         if ('CESetupDLL' not in self.__inf['DefaultInstall']):
             return False
@@ -121,6 +149,7 @@ class InfCabGlue:
         names = self.__parse_disk_names(cab)
         files = self.__parse_disk_files(cab, names)
         destinations = self.__parse_destinations(cab)
+        copy_files = self.__parse_copy_files(cab, files, destinations)
         self.__parse_setup_dll(cab, files)
 
         cab_file = self.__create_output_filename()
