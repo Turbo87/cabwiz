@@ -1,5 +1,6 @@
 import subprocess
 import struct
+import binascii
 
 def munge_filename(munged, extension):
     munged = munged.split("/")[-1].split(".")[0]
@@ -49,7 +50,7 @@ class CabWriter:
         strings = ''
         for i in range(len(self.Strings)):
             string = self.Strings[i]
-            strings += struct.pack('<HH', i, len(string) + 1)
+            strings += struct.pack('<HH', i + 1, len(string) + 1)
             strings += string + '\0'
         
         offset += len(strings)
@@ -59,10 +60,12 @@ class CabWriter:
         directories = ''
         for i in range(len(self.Dirs)):
             dir = self.Dirs[i]
-            directories += struct.pack('<HH', directory_id, 2 * len(dir[1]))
+            directories += struct.pack('<HH', i + 1, (len(dir[1]) * 2) + 2)
             for id in dir[1]:
                 directories += struct.pack('<H', id)
-        
+
+            directories += struct.pack('<H', 0)
+
         offset += len(directories)
     
         # Files.
@@ -70,13 +73,9 @@ class CabWriter:
         files = '';
         for i in range(len(self.Files)):
             file = self.Files[i]
-            
-            filename = path
-            filename = file[0].split("/")[-1]
+            files += struct.pack('<HHHIH', i + 1, file[5], i + 1, file[4], len(file[2]) + 1)
+            files += file[2] + '\0'
 
-            files += struct.pack('<HHHIH', i, file[1], i, 0, 1 + len(filename))
-            files += file + '\0'
-        
         offset += len(files)
     
         # RegHives.
@@ -115,8 +114,6 @@ class CabWriter:
                 strings + directories + files + reghives + regkeys + links)
         
     def write(self, path, dir = ''):
-        cab_files = []
-        
         if dir != '' and not dir.endswith('/'):
             dir += '/'
         
@@ -126,7 +123,10 @@ class CabWriter:
         
         lcab_args = ['lcab', '-n']
         lcab_args.append(dir + manifest)
-        lcab_args.extend(cab_files)
+        
+        for file in self.Files:
+            lcab_args.append(file[1] + file[0])
+            
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(path)
         subprocess.call(lcab_args)

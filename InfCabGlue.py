@@ -65,7 +65,7 @@ class InfCabGlue:
         names = {}
         for id, value in self.__inf['SourceDisksNames'].iteritems():
             id = int(id)
-            value = value.split(',')[-1].replace('\\', '/').replace('"', '')
+            value = value.split(',')[-1].replace('\\', '/').replace('"', '').strip()
             if not value.endswith('/'): value += '/'
             names[id] = value
             
@@ -76,15 +76,15 @@ class InfCabGlue:
         for file, id in self.__inf['SourceDisksFiles'].iteritems():
             id = int(id)
             if id in names:
-                files[file.replace('"', '')] = names[id]
+                files[file.replace('"', '').strip()] = names[id]
             
         return files
     
     def __parse_destinations(self, cab):
         destinations = {}
         for name, value in self.__inf['DestinationDirs'].iteritems():
-            value = value.split(',')[-1].replace('\\', '/').replace('"', '')
-            destinations[name] = value
+            value = value.split(',')[-1].replace('\\', '/').replace('"', '').strip()
+            destinations[name.strip()] = value
             
         return destinations
     
@@ -115,6 +115,35 @@ class InfCabGlue:
                 copy_files.append(file)
             
         return copy_files
+    
+    def __get_string_id(self, cab, string):
+        if string in cab.Strings: return cab.Strings[string]
+        
+        cab.Strings.append(string)
+        return len(cab.Strings)
+    
+    def __get_dir_id(self, cab, dir):
+        if dir in cab.Dirs: return cab.Dirs[dir]
+        
+        parts = dir.split('/')
+        strings = []
+        for part in parts:
+            strings.append(self.__get_string_id(cab, part.strip()))
+
+        cab.Dirs.append([dir, strings])
+        return len(cab.Dirs)
+    
+    def __convert_copy_files(self, cab, copy_files):
+        for i in range(len(copy_files)):
+            file = copy_files[i]
+            
+            out = CabWriter.munge_filename(file[0], i + 1)
+            shutil.copy(file[1] + file[0], self.__dest + out)
+            
+            dir = self.__get_dir_id(cab, file[3])
+            cab.Files.append([out, self.__dest, file[2], file[3], file[4], dir])
+            
+        return True
     
     def __parse_setup_dll(self, cab, files):
         if ('CESetupDLL' not in self.__inf['DefaultInstall']):
@@ -150,6 +179,7 @@ class InfCabGlue:
         files = self.__parse_disk_files(cab, names)
         destinations = self.__parse_destinations(cab)
         copy_files = self.__parse_copy_files(cab, files, destinations)
+        self.__convert_copy_files(cab, copy_files)
         self.__parse_setup_dll(cab, files)
 
         cab_file = self.__create_output_filename()
