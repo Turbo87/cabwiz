@@ -327,5 +327,9 @@ class InfCabGlue:
         print 'Writing CAB file to "' + self.__dest + cab_file + '" ...'
         if not cab.write(cab_file, self.__dest):
             return False
+        os.unlink(self.__dest + 'manifest.000')        
+        for file in cab.Files:
+            os.unlink(file[1] + file[0])
+        if cab.SetupFile != "": os.unlink(cab.SetupFile)
         
         return True
