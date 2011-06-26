@@ -65,7 +65,8 @@ class InfCabGlue:
         names = {}
         for id, value in self.__inf['SourceDisksNames'].iteritems():
             id = int(id)
-            value = value.split(',')[-1]
+            value = value.split(',')[-1].replace('\\', '/')
+            if not value.endswith('/'): value += '/'
             names[id] = value
             
         return names
