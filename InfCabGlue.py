@@ -55,20 +55,20 @@ class InfCabGlue:
         
         min = self.__parse_device_version('VersionMin')
         if not min: return False
-        cab.VersionMin = min
+        cab.MinVersion = min
         
         max = self.__parse_device_version('VersionMax')
         if not max: return False
-        cab.VersionMax = max
+        cab.MaxVersion = max
         
         if 'BuildMax' in self.__inf['CEDevice']:
-            cab.BuildMax = int(self.__inf['CEDevice']['BuildMax'], 16)
+            cab.MaxBuild = int(self.__inf['CEDevice']['BuildMax'], 16)
             
         return True
     
     def __parse_disk_names(self, cab):
         names = {}
-        for id, value in self.__inf['SourceDisksNames'].iteritems():
+        for id, value in self.__inf['SourceDisksNames'].items():
             id = int(id)
             value = value.split(',')[-1].replace('\\', '/').replace('"', '').strip()
             if not value.endswith('/'): value += '/'
@@ -78,7 +78,7 @@ class InfCabGlue:
     
     def __parse_disk_files(self, cab, names):
         files = {}
-        for file, id in self.__inf['SourceDisksFiles'].iteritems():
+        for file, id in self.__inf['SourceDisksFiles'].items():
             id = int(id)
             if id in names:
                 files[file.replace('"', '').strip()] = names[id]
@@ -87,7 +87,7 @@ class InfCabGlue:
     
     def __parse_destinations(self, cab):
         destinations = {}
-        for name, value in self.__inf['DestinationDirs'].iteritems():
+        for name, value in self.__inf['DestinationDirs'].items():
             value = value.split(',')[-1].replace('\\', '/').replace('"', '').strip()
             destinations[name.strip()] = value
             
@@ -296,7 +296,7 @@ class InfCabGlue:
     def glue(self):
         verbose = ('verbose' in self.__parameters)
 
-        if verbose: print 'Reading INF file "' + self.__parameters['inf-file'] + '" ...'
+        if verbose: print('Reading INF file "' + self.__parameters['inf-file'] + '" ...')
             
         inf = InfReader.InfReader()
         
@@ -309,7 +309,7 @@ class InfCabGlue:
             if not self.__dest.endswith('/'): self.__dest += '/'
             if not os.path.exists(self.__dest): os.mkdir(self.__dest)
         
-        if verbose: print 'Processing INF file ...'
+        if verbose: print('Processing INF file ...')
         cab = CabWriter.CabWriter()
         if not self.__parse_general(cab): return False
         if not self.__parse_device(cab): return False
@@ -328,18 +328,18 @@ class InfCabGlue:
         if cab_file == "":
             return False
         
-        if verbose: print 'Writing CAB file to "' + self.__dest + cab_file + '" ...'
+        if verbose: print('Writing CAB file to "' + self.__dest + cab_file + '" ...')
             
         if not cab.write(cab_file, self.__dest, verbose = verbose):
             return False
 
-        if verbose: print 'Removing temporary files ...'
+        if verbose: print('Removing temporary files ...')
         
         os.unlink(self.__dest + 'manifest.000')        
         for file in cab.Files:
             os.unlink(file[1] + file[0])
         if cab.SetupFile != "": os.unlink(cab.SetupFile)
         
-        if verbose: print 'Done.'
+        if verbose: print('Done.')
         
         return True

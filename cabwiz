@@ -43,14 +43,14 @@ def read_parameters(argv):
     return parameters
 
 def print_help():
-    print '''Usage:    python cabwiz.py <inf-file> [/dest <dest-dir>] [/err <err-file>] [/cpu <cpu-type>] [/platform <platform-name] [/v]
+    print('''Usage:    python cabwiz.py <inf-file> [/dest <dest-dir>] [/err <err-file>] [/cpu <cpu-type>] [/platform <platform-name] [/v]
     
          inf-file       INF source file to use
          dest-dir       absolute dest dir for CAB files
          err-file       error file
          cpu-type       cpu types to support in the INF file
          platform-name  the name of the platform to support in the INF file
-         v				verbose output'''
+         v				verbose output''')
 
 def main():
     parameters = read_parameters(sys.argv)
@@ -61,8 +61,8 @@ def main():
     
     if 'inf-file' not in parameters:
         print_help()
-        print
-        print 'Error: invalid command line parameters'
+        print()
+        print('Error: invalid command line parameters')
         return
     
     glue = InfCabGlue.InfCabGlue(parameters)

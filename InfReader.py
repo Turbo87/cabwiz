@@ -35,7 +35,7 @@ class InfReader:
         if self.has_section(section):
             return True
         
-        print 'Error: Section "' + section + '" is missing'
+        print('Error: Section "' + section + '" is missing')
         return False
     
     def __check_sections(self):
@@ -79,7 +79,7 @@ class InfReader:
 
     def __apply_replacement(self, replacement):
         new_sections = {}
-        for section, content in self.__data.iteritems():
+        for section, content in self.__data.items():
             new_content = []
             for line in content:
                 new_content.append(line.replace('%' + replacement[0] + '%', replacement[1]))
@@ -121,7 +121,7 @@ class InfReader:
         self.__data[section] = dict
             
     def __array_to_dict(self):
-        for section, content in self.__data.iteritems():
+        for section, content in self.__data.items():
             if (section.startswith('Version') or
                 section.startswith('CEStrings') or
                 section.startswith('Strings') or

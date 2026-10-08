@@ -32,32 +32,32 @@ class CabWriter:
     
         # Application.
         application_offset = offset
-        application = self.AppName + "\0"
+        application = self.AppName.encode("utf-8") + b"\0"
         offset += len(application)
     
         # Provider.
         provider_offset = offset
-        provider = self.Provider + "\0"
+        provider = self.Provider.encode("utf-8") + b"\0"
         offset += len(provider)
     
         # Unsupported platforms.
         unsupported_offset = offset
-        unsupported = self.Unsupported + '\0' if self.Unsupported != "" else ""
+        unsupported = self.Unsupported.encode("utf-8") + b'\0' if self.Unsupported != "" else b""
         offset += len(unsupported)
     
         # Strings.
         strings_offset = offset
-        strings = ''
+        strings = b''
         for i in range(len(self.Strings)):
-            string = self.Strings[i]
+            string = self.Strings[i].encode("utf-8")
             strings += struct.pack('<HH', i + 1, len(string) + 1)
-            strings += string + '\0'
+            strings += string + b'\0'
         
         offset += len(strings)
     
         # Directories.
         directories_offset = offset;
-        directories = ''
+        directories = b''
         for i in range(len(self.Dirs)):
             dir = self.Dirs[i]
             directories += struct.pack('<HH', i + 1, (len(dir[1]) * 2) + 2)
@@ -70,17 +70,17 @@ class CabWriter:
     
         # Files.
         files_offset = offset;
-        files = '';
+        files = b'';
         for i in range(len(self.Files)):
             file = self.Files[i]
             files += struct.pack('<HHHIH', i + 1, file[5], i + 1, file[4], len(file[2]) + 1)
-            files += file[2] + '\0'
+            files += file[2].encode("utf-8") + b'\0'
 
         offset += len(files)
     
         # RegHives.
         reghives_offset = offset
-        reghives = ''
+        reghives = b''
         for i in range(len(self.RegHives)):
             hive = self.RegHives[i]
             reghives += struct.pack('<HHHH', i + 1, hive[1], 0, (len(hive[2]) * 2) + 2)
@@ -93,7 +93,7 @@ class CabWriter:
     
         # RegKeys.
         regkeys_offset = offset
-        regkeys = ''
+        regkeys = b''
         for i in range(len(self.RegKeys)):
             key = self.RegKeys[i]
 
@@ -114,7 +114,7 @@ class CabWriter:
     
         # Links.
         links_offset = offset
-        links = ''
+        links = b''
         for i in range(len(self.Links)):
             link = self.Links[i]
             links += struct.pack('<HHHHHH', i + 1, 0, link[1], link[2], link[3], (len(link[4]) * 2) + 2)
@@ -128,7 +128,7 @@ class CabWriter:
         # Header.
         length = offset;
     
-        header = 'MSCE'
+        header = b'MSCE'
         header += struct.pack('<IIIIIIIIIII', 0, length, 0, 1, self.Architecture, 
                               self.MinVersion[0], self.MinVersion[1], 
                               self.MaxVersion[0], self.MaxVersion[1], 
@@ -138,8 +138,8 @@ class CabWriter:
                               len(self.RegKeys), len(self.Links))
         header += struct.pack('<IIIIII', strings_offset, directories_offset, 
                               files_offset, reghives_offset, regkeys_offset, links_offset)
-        header += struct.pack('<HHHHHHHH', application_offset, len(self.AppName), 
-                              provider_offset, len(self.Provider), 
+        header += struct.pack('<HHHHHHHH', application_offset, len(self.AppName) + 1, 
+                              provider_offset, len(self.Provider) + 1, 
                               unsupported_offset, len(self.Unsupported), 0, 0)
         
         return (header + application + provider + unsupported + 
@@ -149,7 +149,7 @@ class CabWriter:
         if dir != '' and not dir.endswith('/'):
             dir += '/'
         
-        if verbose: print "Creating manifest ..."
+        if verbose: print("Creating manifest ...")
         manifest = 'manifest.000';
         with open(dir + manifest, "wb") as m:
             m.write(self.__get_manifest())
@@ -157,13 +157,13 @@ class CabWriter:
         lcab_args = ['lcab', '-n']
         lcab_args.append(dir + manifest)
         
-        for file in self.Files:
+        for file in reversed(self.Files):
             lcab_args.append(file[1] + file[0])
             
         if self.SetupFile != "": lcab_args.append(self.SetupFile)
         lcab_args.append(dir + path)
         
-        if verbose: print "Starting lcab ..."
+        if verbose: print("Starting lcab ...")
         with open("/dev/null", "w") as null:
             p = subprocess.Popen(lcab_args, stdout = None if verbose else null)
             p.wait()

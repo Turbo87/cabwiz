@@ -13,7 +13,7 @@ The cabwiz script relies on
 * lcab (https://launchpad.net/ubuntu/+source/lcab/) and
 * python (http://www.python.org/)
 
-cabwiz was developed and tested with python 2.7.
+This version of cabwiz was developed and tested with python 3.14.
 
 ## Usage
 
